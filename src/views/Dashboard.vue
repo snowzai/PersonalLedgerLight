@@ -57,18 +57,18 @@
     <div class="grid grid-cols-3 gap-3 md:gap-4 mb-6">
       <div class="card p-4 md:p-5">
         <p class="text-xs font-medium text-slate-400 mb-1.5">本月收入</p>
-        <p class="text-xl md:text-2xl font-bold text-emerald-600 tabular-nums truncate">{{ formatAmountShort(store.monthIncome) }}</p>
+        <p class="text-xl md:text-2xl font-bold text-emerald-600 tabular-nums truncate">{{ formatCurrency(store.monthIncome) }}</p>
         <p class="text-xs text-slate-400 mt-1">{{ monthIncomeCount }} 筆</p>
       </div>
       <div class="card p-4 md:p-5">
         <p class="text-xs font-medium text-slate-400 mb-1.5">本月支出</p>
-        <p class="text-xl md:text-2xl font-bold text-red-500 tabular-nums truncate">{{ formatAmountShort(store.monthExpense) }}</p>
+        <p class="text-xl md:text-2xl font-bold text-red-500 tabular-nums truncate">{{ formatCurrency(store.monthExpense) }}</p>
         <p class="text-xs text-slate-400 mt-1">{{ monthExpenseCount }} 筆</p>
       </div>
       <div class="card p-4 md:p-5">
         <p class="text-xs font-medium text-slate-400 mb-1.5">本月結餘</p>
         <p class="text-xl md:text-2xl font-bold tabular-nums truncate" :class="store.monthBalance >= 0 ? 'text-blue-600' : 'text-red-500'">
-          {{ formatAmountShort(store.monthBalance) }}
+          {{ formatCurrency(store.monthBalance) }}
         </p>
         <p class="text-xs mt-1" :class="store.monthBalance >= 0 ? 'text-emerald-500' : 'text-red-400'">
           {{ store.monthBalance >= 0 ? '收支平衡' : '超支' }}
@@ -177,10 +177,6 @@ const monthIncomeCount  = computed(() => store.monthTransactions.filter(t => t.t
 const monthExpenseCount = computed(() => store.monthTransactions.filter(t => t.type === 'expense').length)
 
 function formatCurrency(v) { return (v < 0 ? '-' : '') + 'NT$ ' + Math.abs(v).toLocaleString('zh-TW') }
-function formatAmountShort(v) {
-  const abs = Math.abs(v)
-  return (v < 0 ? '-' : '') + 'NT$ ' + (abs >= 10000 ? (abs / 10000).toFixed(1).replace('.0', '') + 'w' : abs.toLocaleString('zh-TW'))
-}
 function formatDate(d) { return dayjs(d).format('M/D') }
 function categoryIcon(cat) { return CATEGORY_ICONS[cat] || '💰' }
 function getLedgerName(id) { return store.ledgers.find(l => l.id === id)?.name || '?' }

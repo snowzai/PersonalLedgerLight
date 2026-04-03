@@ -180,14 +180,14 @@ onMounted(() => {
     form.note        = props.transaction.note || ''
   } else {
     form.ledgerId = defaultLedgerId.value
-    form.category = EXPENSE_CATEGORIES[0]
+    form.category = '其他支出'
   }
   nextTick(() => amountInput.value?.focus())
 })
 
 watch(() => form.type, (type) => {
   const cats = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
-  if (!cats.includes(form.category)) form.category = cats[0]
+  if (!cats.includes(form.category)) form.category = type === 'income' ? '其他收入' : '其他支出'
 })
 
 const currentCategories = computed(() => form.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES)
