@@ -103,7 +103,7 @@
       <!-- Export / Import -->
       <div class="px-3 py-3 border-t border-slate-100 space-y-1">
         <button
-          @click="store.exportData()"
+          @click="startExport"
           class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-150 cursor-pointer"
         >
           <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -199,6 +199,7 @@
     <TransactionModal  v-if="showTxModal"       :transaction="editingTx"       @close="closeTxModal" />
     <TransferModal     v-if="showTransferModal"  :transfer="editingTransfer"    :default-from="store.activeLedgerId !== 'all' ? store.activeLedgerId : null"  @close="showTransferModal = false; editingTransfer = null" />
     <LedgerModal       v-if="showLedgerModal"    :ledger="editingLedger"        @close="showLedgerModal = false; editingLedger = null" />
+    <CryptoModal       v-if="cryptoModal.show"   ref="cryptoModalRef"  :mode="cryptoModal.mode"  @confirm="onCryptoConfirm"  @cancel="cryptoModal.show = false" />
 
     <!-- Import result toast -->
     <Teleport to="body">
@@ -223,6 +224,8 @@ import { useLedgerStore, LEDGER_ICONS } from './stores/ledger.js'
 import TransactionModal from './components/TransactionModal.vue'
 import TransferModal    from './components/TransferModal.vue'
 import LedgerModal      from './components/LedgerModal.vue'
+import CryptoModal      from './components/CryptoModal.vue'
+import { encryptData, decryptData, isEncrypted } from './utils/crypto.js'
 import Dashboard    from './views/Dashboard.vue'
 import Transactions from './views/Transactions.vue'
 
@@ -237,6 +240,15 @@ function showToast(ok, message) {
   setTimeout(() => { toast.value.show = false }, 3000)
 }
 
+// Crypto modal state
+const cryptoModal    = ref({ show: false, mode: 'export' })
+const cryptoModalRef = ref(null)
+let   pendingImportText = ''
+
+function startExport() {
+  cryptoModal.value = { show: true, mode: 'export' }
+}
+
 function triggerImport() {
   fileInput.value?.click()
 }
@@ -246,13 +258,57 @@ function handleImport(e) {
   if (!file) return
   const reader = new FileReader()
   reader.onload = (ev) => {
-    const result = store.importData(ev.target.result)
-    if (result.ok) showToast(true, `匯入成功！共 ${store.transactions.length} 筆交易`)
-    else showToast(false, result.error)
+    const text = ev.target.result
+    if (isEncrypted(text)) {
+      pendingImportText = text
+      cryptoModal.value = { show: true, mode: 'import' }
+    } else {
+      const result = store.importData(text)
+      if (result.ok) showToast(true, `匯入成功！共 ${store.transactions.length} 筆交易`)
+      else showToast(false, result.error)
+    }
   }
   reader.readAsText(file)
-  // Reset so same file can be re-imported
   e.target.value = ''
+}
+
+async function onCryptoConfirm({ passphrase, pepper }) {
+  if (cryptoModal.value.mode === 'export') {
+    try {
+      const payload = JSON.stringify({
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        ledgers: store.ledgers,
+        transactions: store.transactions,
+        transfers: store.transfers,
+      })
+      const encrypted = await encryptData(payload, passphrase, pepper)
+      const blob = new Blob([encrypted], { type: 'application/json' })
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href     = url
+      a.download = `帳本備份_${new Date().toISOString().slice(0, 10)}_加密.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      cryptoModal.value.show = false
+      showToast(true, '加密備份匯出成功')
+    } catch {
+      cryptoModalRef.value?.setError('加密失敗，請再試一次')
+    }
+  } else {
+    try {
+      const plain  = await decryptData(pendingImportText, passphrase, pepper)
+      const result = store.importData(plain)
+      if (result.ok) {
+        cryptoModal.value.show = false
+        showToast(true, `匯入成功！共 ${store.transactions.length} 筆交易`)
+      } else {
+        cryptoModalRef.value?.setError(result.error)
+      }
+    } catch {
+      cryptoModalRef.value?.setError('解密失敗，請確認密碼與調味料是否正確')
+    }
+  }
 }
 
 // Modal states
