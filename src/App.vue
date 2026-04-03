@@ -146,7 +146,67 @@
         <component :is="item.icon" class="w-5 h-5" />
         <span class="text-xs font-medium">{{ item.label }}</span>
       </button>
+      <button
+        @click="showSettingsSheet = true"
+        class="flex-1 flex flex-col items-center py-3 gap-1 transition-colors cursor-pointer"
+        :class="showSettingsSheet ? 'text-blue-600' : 'text-slate-400'"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        <span class="text-xs font-medium">設定</span>
+      </button>
     </nav>
+
+    <!-- Settings bottom sheet (mobile) -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showSettingsSheet" class="md:hidden fixed inset-0 z-40 flex flex-col justify-end">
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showSettingsSheet = false" />
+          <div class="relative bg-white rounded-t-3xl shadow-2xl pb-safe">
+            <div class="flex justify-center pt-3 pb-1">
+              <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+            </div>
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 class="text-base font-semibold text-slate-900">設定</h2>
+              <button @click="showSettingsSheet = false" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="px-4 py-3 space-y-1 pb-8">
+              <button
+                @click="showSettingsSheet = false; startExport()"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">匯出備份</p>
+                  <p class="text-xs text-slate-400">加密並下載帳本資料</p>
+                </div>
+              </button>
+              <button
+                @click="showSettingsSheet = false; triggerImport()"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">匯入備份</p>
+                  <p class="text-xs text-slate-400">從備份檔案還原資料</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Speed-dial FAB -->
     <div class="fixed bottom-24 right-5 md:bottom-8 md:right-8 flex flex-col-reverse items-end gap-3 z-20">
@@ -311,6 +371,9 @@ async function onCryptoConfirm({ passphrase, pepper }) {
   }
 }
 
+// Settings sheet (mobile)
+const showSettingsSheet = ref(false)
+
 // Modal states
 const showTxModal      = ref(false)
 const editingTx        = ref(null)
@@ -394,4 +457,10 @@ onMounted(() => {
 .toast-enter-active { transition: all 0.25s ease-out; }
 .toast-leave-active { transition: all 0.2s ease-in; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+
+.sheet-enter-active { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+.sheet-leave-active { transition: all 0.2s ease-in; }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
+.sheet-enter-from .relative, .sheet-leave-to .relative { transform: translateY(100%); }
+.sheet-enter-active .relative, .sheet-leave-active .relative { transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
 </style>
