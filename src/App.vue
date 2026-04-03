@@ -130,7 +130,7 @@
 
     <!-- Main -->
     <main class="flex-1 md:ml-64 pb-20 md:pb-0">
-      <component :is="views[currentView]" @open-edit="openEditTx" @open-edit-transfer="openEditTransfer" />
+      <component :is="views[currentView]" @open-edit="openEditTx" @open-edit-transfer="openEditTransfer" @open-ledger="openLedgerModal(null)" />
     </main>
 
     <!-- Bottom nav (mobile) -->
