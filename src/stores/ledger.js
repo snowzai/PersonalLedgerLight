@@ -38,13 +38,19 @@ export const useLedgerStore = defineStore('ledger', () => {
   const ledgers     = ref([])
   const transactions = ref([])
   const transfers   = ref([])
+  const recurringExpenses = ref([])
   const currentMonth   = ref(dayjs().format('YYYY-MM'))
   const activeLedgerId = ref('all') // 'all' or ledger.id
 
   // ── Persistence ────────────────────────────────────────────────────────────
 
   function save() {
-    localStorage.setItem('ledger_v2', JSON.stringify({ ledgers: ledgers.value, transactions: transactions.value, transfers: transfers.value }))
+    localStorage.setItem('ledger_v2', JSON.stringify({
+      ledgers: ledgers.value,
+      transactions: transactions.value,
+      transfers: transfers.value,
+      recurringExpenses: recurringExpenses.value,
+    }))
   }
 
   function load() {
@@ -54,6 +60,7 @@ export const useLedgerStore = defineStore('ledger', () => {
       ledgers.value      = data.ledgers      || []
       transactions.value = data.transactions || []
       transfers.value    = data.transfers    || []
+      recurringExpenses.value = data.recurringExpenses || []
       // Migrate: assign default ledger if missing
       if (ledgers.value.length > 0) {
         const defaultId = ledgers.value[0].id
@@ -68,6 +75,7 @@ export const useLedgerStore = defineStore('ledger', () => {
       ]
       transactions.value = []
       transfers.value    = []
+      recurringExpenses.value = []
       save()
     }
   }
@@ -211,6 +219,57 @@ export const useLedgerStore = defineStore('ledger', () => {
     save()
   }
 
+  // ── Recurring Expenses CRUD ────────────────────────────────────────────────
+
+  function addRecurring(data) {
+    recurringExpenses.value.push({ ...data, id: 'rec_' + Date.now(), isActive: true })
+    save()
+  }
+  function updateRecurring(id, data) {
+    const idx = recurringExpenses.value.findIndex(r => r.id === id)
+    if (idx !== -1) { recurringExpenses.value[idx] = { ...recurringExpenses.value[idx], ...data }; save() }
+  }
+  function deleteRecurring(id) {
+    recurringExpenses.value = recurringExpenses.value.filter(r => r.id !== id)
+    save()
+  }
+
+  // Returns IDs of recurring expenses already applied in a given month
+  function appliedRecurringIds(month) {
+    return new Set(
+      transactions.value
+        .filter(t => t.recurringId && t.date.startsWith(month))
+        .map(t => t.recurringId)
+    )
+  }
+
+  // Apply selected recurring expenses to a month (skips already applied)
+  function applyRecurring(month, selectedIds) {
+    const already = appliedRecurringIds(month)
+    selectedIds.forEach(id => {
+      if (already.has(id)) return
+      const rec = recurringExpenses.value.find(r => r.id === id)
+      if (!rec) return
+      const day = String(rec.dayOfMonth).padStart(2, '0')
+      // Clamp day to last day of month
+      const date = dayjs(`${month}-${day}`).isValid()
+        ? dayjs(`${month}-01`).date(rec.dayOfMonth).format('YYYY-MM-DD')
+        : dayjs(`${month}-01`).endOf('month').format('YYYY-MM-DD')
+      transactions.value.unshift({
+        id: Date.now().toString() + '_' + id,
+        recurringId: id,
+        type: 'expense',
+        amount: rec.amount,
+        ledgerId: rec.ledgerId,
+        category: rec.category,
+        description: rec.name,
+        date,
+        note: rec.note || '',
+      })
+    })
+    save()
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   function getLedger(id) { return ledgers.value.find(l => l.id === id) }
@@ -224,6 +283,7 @@ export const useLedgerStore = defineStore('ledger', () => {
       ledgers: ledgers.value,
       transactions: transactions.value,
       transfers: transfers.value,
+      recurringExpenses: recurringExpenses.value,
     }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const url  = URL.createObjectURL(blob)
@@ -244,6 +304,7 @@ export const useLedgerStore = defineStore('ledger', () => {
       ledgers.value      = data.ledgers
       transactions.value = data.transactions
       transfers.value    = data.transfers || []
+      recurringExpenses.value = data.recurringExpenses || []
       save()
       return { ok: true }
     } catch {
@@ -252,7 +313,7 @@ export const useLedgerStore = defineStore('ledger', () => {
   }
 
   return {
-    ledgers, transactions, transfers,
+    ledgers, transactions, transfers, recurringExpenses,
     currentMonth, activeLedgerId,
     ledgersWithBalance, totalBalance,
     activeTransactions, activeTransfers,
@@ -263,6 +324,7 @@ export const useLedgerStore = defineStore('ledger', () => {
     addLedger, updateLedger, deleteLedger, getLedger,
     addTransaction, updateTransaction, deleteTransaction,
     addTransfer, updateTransfer, deleteTransfer,
+    addRecurring, updateRecurring, deleteRecurring, applyRecurring, appliedRecurringIds,
     exportData, importData,
     LEDGER_COLORS, LEDGER_ICONS,
   }

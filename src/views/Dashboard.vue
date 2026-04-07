@@ -57,17 +57,17 @@
     <div class="grid grid-cols-3 gap-3 md:gap-4 mb-6">
       <div class="card p-4 md:p-5">
         <p class="text-xs font-medium text-slate-400 mb-1.5">本月收入</p>
-        <p class="text-xl md:text-2xl font-bold text-emerald-600 tabular-nums truncate">{{ formatCurrency(store.monthIncome) }}</p>
+        <p class="text-sm md:text-xl font-bold text-emerald-600 tabular-nums break-all leading-snug">{{ formatCurrency(store.monthIncome) }}</p>
         <p class="text-xs text-slate-400 mt-1">{{ monthIncomeCount }} 筆</p>
       </div>
       <div class="card p-4 md:p-5">
         <p class="text-xs font-medium text-slate-400 mb-1.5">本月支出</p>
-        <p class="text-xl md:text-2xl font-bold text-red-500 tabular-nums truncate">{{ formatCurrency(store.monthExpense) }}</p>
+        <p class="text-sm md:text-xl font-bold text-red-500 tabular-nums break-all leading-snug">{{ formatCurrency(store.monthExpense) }}</p>
         <p class="text-xs text-slate-400 mt-1">{{ monthExpenseCount }} 筆</p>
       </div>
       <div class="card p-4 md:p-5">
         <p class="text-xs font-medium text-slate-400 mb-1.5">本月結餘</p>
-        <p class="text-xl md:text-2xl font-bold tabular-nums truncate" :class="store.monthBalance >= 0 ? 'text-blue-600' : 'text-red-500'">
+        <p class="text-sm md:text-xl font-bold tabular-nums break-all leading-snug" :class="store.monthBalance >= 0 ? 'text-blue-600' : 'text-red-500'">
           {{ formatCurrency(store.monthBalance) }}
         </p>
         <p class="text-xs mt-1" :class="store.monthBalance >= 0 ? 'text-emerald-500' : 'text-red-400'">

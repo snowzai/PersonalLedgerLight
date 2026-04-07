@@ -117,13 +117,26 @@
           @click="triggerImport"
           class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-150 cursor-pointer"
         >
-          
           <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
           <span class="text-sm">匯入備份</span>
+        </button>
+        <button
+          @click="showDriveModal = true"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-150 cursor-pointer"
+        >
+          <svg viewBox="0 0 87.3 78" class="w-4 h-4 flex-shrink-0">
+            <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+            <path d="M43.65 25L29.9 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5A9.06 9.06 0 000 53h27.5z" fill="#00ac47"/>
+            <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.65 10.65z" fill="#ea4335"/>
+            <path d="M43.65 25L57.4 0H29.9z" fill="#00832d"/>
+            <path d="M59.8 53H87.3L73.55 29.5 57.4 0 43.65 25 57.4 53z" fill="#2684fc"/>
+            <path d="M43.65 25L27.5 53H59.8z" fill="#ffba00"/>
+          </svg>
+          <span class="text-sm">Google Drive</span>
         </button>
         <input ref="fileInput" type="file" accept=".json" class="hidden" @change="handleImport" />
       </div>
@@ -202,6 +215,25 @@
                   <p class="text-xs text-slate-400">從備份檔案還原資料</p>
                 </div>
               </button>
+              <button
+                @click="showSettingsSheet = false; showDriveModal = true"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 87.3 78" class="w-5 h-5">
+                    <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+                    <path d="M43.65 25L29.9 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5A9.06 9.06 0 000 53h27.5z" fill="#00ac47"/>
+                    <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.65 10.65z" fill="#ea4335"/>
+                    <path d="M43.65 25L57.4 0H29.9z" fill="#00832d"/>
+                    <path d="M59.8 53H87.3L73.55 29.5 57.4 0 43.65 25 57.4 53z" fill="#2684fc"/>
+                    <path d="M43.65 25L27.5 53H59.8z" fill="#ffba00"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">Google Drive</p>
+                  <p class="text-xs text-slate-400">手動備份或還原至雲端</p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -235,6 +267,18 @@
               </svg>
             </div>
           </button>
+          <button
+            @click="openRecurringApply"
+            class="flex items-center gap-3 cursor-pointer group"
+          >
+            <span class="bg-white text-slate-700 text-sm font-medium px-3 py-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity">套用固定支出</span>
+            <div class="w-12 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-150 hover:scale-105">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                <path d="M8 14h.01M12 14h.01M16 14h.01"/>
+              </svg>
+            </div>
+          </button>
         </div>
       </Transition>
 
@@ -256,10 +300,12 @@
     <div v-if="fabOpen" class="fixed inset-0 z-10" @click="fabOpen = false" />
 
     <!-- Modals -->
-    <TransactionModal  v-if="showTxModal"       :transaction="editingTx"       @close="closeTxModal" />
-    <TransferModal     v-if="showTransferModal"  :transfer="editingTransfer"    :default-from="store.activeLedgerId !== 'all' ? store.activeLedgerId : null"  @close="showTransferModal = false; editingTransfer = null" />
-    <LedgerModal       v-if="showLedgerModal"    :ledger="editingLedger"        @close="showLedgerModal = false; editingLedger = null" />
-    <CryptoModal       v-if="cryptoModal.show"   ref="cryptoModalRef"  :mode="cryptoModal.mode"  @confirm="onCryptoConfirm"  @cancel="cryptoModal.show = false" />
+    <TransactionModal       v-if="showTxModal"              :transaction="editingTx"    @close="closeTxModal" />
+    <TransferModal          v-if="showTransferModal"         :transfer="editingTransfer" :default-from="store.activeLedgerId !== 'all' ? store.activeLedgerId : null" @close="showTransferModal = false; editingTransfer = null" />
+    <LedgerModal            v-if="showLedgerModal"           :ledger="editingLedger"     @close="showLedgerModal = false; editingLedger = null" />
+    <CryptoModal            v-if="cryptoModal.show"          ref="cryptoModalRef"        :mode="cryptoModal.mode" @confirm="onCryptoConfirm" @cancel="cryptoModal.show = false" />
+    <RecurringApplyModal    v-if="showRecurringApplyModal"   @close="showRecurringApplyModal = false" @applied="onRecurringApplied" />
+    <GoogleDriveModal       v-if="showDriveModal"            @close="showDriveModal = false" @toast="({ ok, message }) => showToast(ok, message)" />
 
     <!-- Import result toast -->
     <Teleport to="body">
@@ -281,13 +327,16 @@
 <script setup>
 import { ref, onMounted, h } from 'vue'
 import { useLedgerStore, LEDGER_ICONS } from './stores/ledger.js'
-import TransactionModal from './components/TransactionModal.vue'
-import TransferModal    from './components/TransferModal.vue'
-import LedgerModal      from './components/LedgerModal.vue'
-import CryptoModal      from './components/CryptoModal.vue'
+import TransactionModal      from './components/TransactionModal.vue'
+import TransferModal         from './components/TransferModal.vue'
+import LedgerModal           from './components/LedgerModal.vue'
+import CryptoModal           from './components/CryptoModal.vue'
+import RecurringApplyModal   from './components/RecurringApplyModal.vue'
+import GoogleDriveModal      from './components/GoogleDriveModal.vue'
 import { encryptData, decryptData, isEncrypted } from './utils/crypto.js'
-import Dashboard    from './views/Dashboard.vue'
-import Transactions from './views/Transactions.vue'
+import Dashboard           from './views/Dashboard.vue'
+import Transactions        from './views/Transactions.vue'
+import RecurringExpenses   from './views/RecurringExpenses.vue'
 
 const store = useLedgerStore()
 const currentView = ref('dashboard')
@@ -381,8 +430,10 @@ const showTransferModal = ref(false)
 const editingTransfer  = ref(null)
 const showLedgerModal  = ref(false)
 const editingLedger    = ref(null)
+const showRecurringApplyModal = ref(false)
+const showDriveModal          = ref(false)
 
-const views = { dashboard: Dashboard, transactions: Transactions }
+const views = { dashboard: Dashboard, transactions: Transactions, recurring: RecurringExpenses }
 
 // ── Icon components ──────────────────────────────────────────────────────────
 const IconGrid = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round' }, [
@@ -394,10 +445,16 @@ const IconList = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', 
   h('line', { x1:'8', y1:'18', x2:'21', y2:'18' }), h('line', { x1:'3', y1:'6', x2:'3.01', y2:'6' }),
   h('line', { x1:'3', y1:'12', x2:'3.01', y2:'12' }), h('line', { x1:'3', y1:'18', x2:'3.01', y2:'18' }),
 ])}
+const IconCalendar = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
+  h('rect', { x:'3', y:'4', width:'18', height:'18', rx:'2' }),
+  h('path', { d:'M16 2v4M8 2v4M3 10h18' }),
+  h('path', { d:'M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01' }),
+])}
 
 const navItems = [
-  { key: 'dashboard',    label: '總覽',   icon: IconGrid },
+  { key: 'dashboard',    label: '總覽',    icon: IconGrid },
   { key: 'transactions', label: '交易記錄', icon: IconList },
+  { key: 'recurring',   label: '固定支出', icon: IconCalendar },
 ]
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -434,6 +491,13 @@ function openTransfer() {
   fabOpen.value = false
   editingTransfer.value = null
   showTransferModal.value = true
+}
+function openRecurringApply() {
+  fabOpen.value = false
+  showRecurringApplyModal.value = true
+}
+function onRecurringApplied(count) {
+  showToast(true, `已套用 ${count} 筆固定支出`)
 }
 function openEditTransfer(transfer) {
   editingTransfer.value = transfer
