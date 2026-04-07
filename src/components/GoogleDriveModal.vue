@@ -13,7 +13,6 @@
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div class="flex items-center gap-3">
-            <!-- Google Drive icon -->
             <div class="w-8 h-8 flex items-center justify-center">
               <svg viewBox="0 0 87.3 78" class="w-7 h-7">
                 <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
@@ -26,7 +25,7 @@
             </div>
             <div>
               <h2 class="text-base font-semibold text-slate-900">Google Drive 備份</h2>
-              <p class="text-xs text-slate-400">手動讀取 / 寫入</p>
+              <p class="text-xs text-slate-400">手動讀取 / 寫入（加密保護）</p>
             </div>
           </div>
           <button
@@ -58,13 +57,13 @@
           <!-- Auth status -->
           <div class="flex items-center gap-3 p-3 rounded-xl" :class="isAuthed ? 'bg-emerald-50' : 'bg-slate-50'">
             <div class="w-2 h-2 rounded-full flex-shrink-0" :class="isAuthed ? 'bg-emerald-500' : 'bg-slate-300'"></div>
-            <p class="text-xs font-medium" :class="isAuthed ? 'text-emerald-700' : 'text-slate-500'">
+            <p class="text-xs font-medium flex-1" :class="isAuthed ? 'text-emerald-700' : 'text-slate-500'">
               {{ isAuthed ? '已授權（本次操作有效）' : '尚未授權，請先登入 Google' }}
             </p>
             <button
               v-if="isAuthed"
               @click="handleRevoke"
-              class="ml-auto text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+              class="text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
             >登出</button>
           </div>
 
@@ -75,15 +74,17 @@
           </div>
 
           <!-- Error -->
-          <div v-if="error" class="p-3 bg-red-50 rounded-xl">
+          <div v-if="error" class="p-3 bg-red-50 rounded-xl flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+            </svg>
             <p class="text-xs text-red-600">{{ error }}</p>
           </div>
 
           <!-- Actions -->
           <div class="space-y-2">
-            <!-- Upload -->
             <button
-              @click="handleUpload"
+              @click="startUpload"
               :disabled="loading"
               class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left transition-colors cursor-pointer"
               :class="loading ? 'opacity-50 cursor-not-allowed bg-slate-50' : 'hover:bg-slate-50'"
@@ -97,13 +98,17 @@
               </div>
               <div class="flex-1">
                 <p class="text-sm font-medium text-slate-700">備份到 Google Drive</p>
-                <p class="text-xs text-slate-400">將目前資料寫入雲端（{{ backupFile ? '覆蓋更新' : '新建檔案' }}）</p>
+                <p class="text-xs text-slate-400">加密後寫入雲端（{{ backupFile ? '覆蓋更新' : '新建檔案' }}）</p>
+              </div>
+              <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
               </div>
             </button>
 
-            <!-- Download -->
             <button
-              @click="handleDownload"
+              @click="startDownload"
               :disabled="loading"
               class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left transition-colors cursor-pointer"
               :class="loading ? 'opacity-50 cursor-not-allowed bg-slate-50' : 'hover:bg-slate-50'"
@@ -117,13 +122,18 @@
               </div>
               <div class="flex-1">
                 <p class="text-sm font-medium text-slate-700">從 Google Drive 還原</p>
-                <p class="text-xs text-slate-400">讀取雲端備份並匯入（會覆蓋本機資料）</p>
+                <p class="text-xs text-slate-400">下載並解密，還原至本機</p>
+              </div>
+              <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
               </div>
             </button>
           </div>
 
-          <!-- Loading indicator -->
-          <div v-if="loading" class="flex items-center justify-center gap-2 py-2">
+          <!-- Loading -->
+          <div v-if="loading" class="flex items-center justify-center gap-2 py-1">
             <svg class="w-4 h-4 text-blue-500 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
@@ -135,33 +145,45 @@
         <!-- Footer -->
         <div class="px-6 pb-6 pt-1">
           <p class="text-xs text-slate-400 text-center leading-relaxed">
-            授權範圍僅限此 app 建立的檔案（drive.file），<br>不會讀取 Drive 內的其他資料。
+            授權範圍僅限此 app 建立的檔案（drive.file），不會讀取 Drive 內的其他資料。
           </p>
         </div>
       </div>
     </div>
+
+    <!-- CryptoModal (appears on top) -->
+    <CryptoModal
+      v-if="cryptoMode"
+      ref="cryptoModalRef"
+      :mode="cryptoMode"
+      @confirm="onCryptoConfirm"
+      @cancel="cryptoMode = null"
+    />
   </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import dayjs from 'dayjs'
+import CryptoModal from './CryptoModal.vue'
 import {
   getClientId, isTokenValid, requestToken, revokeToken,
   findBackupFile, uploadBackup, downloadBackup,
 } from '../utils/googleDrive.js'
+import { encryptData, decryptData, isEncrypted } from '../utils/crypto.js'
 import { useLedgerStore } from '../stores/ledger.js'
-import { isEncrypted } from '../utils/crypto.js'
 
 const emit = defineEmits(['close', 'toast'])
 const store = useLedgerStore()
 
-const hasClientId = computed(() => !!getClientId())
-const isAuthed    = ref(isTokenValid())
-const loading     = ref(false)
-const loadingText = ref('')
-const error       = ref('')
-const backupFile  = ref(null)
+const hasClientId  = computed(() => !!getClientId())
+const isAuthed     = ref(isTokenValid())
+const loading      = ref(false)
+const loadingText  = ref('')
+const error        = ref('')
+const backupFile   = ref(null)
+const cryptoMode   = ref(null)   // 'export' | 'import' | null
+const cryptoModalRef = ref(null)
 
 function formatDate(iso) {
   return dayjs(iso).format('YYYY/MM/DD HH:mm')
@@ -175,11 +197,7 @@ async function authorize() {
 }
 
 async function refreshFileInfo() {
-  try {
-    backupFile.value = await findBackupFile()
-  } catch {
-    // non-critical
-  }
+  try { backupFile.value = await findBackupFile() } catch { /* non-critical */ }
 }
 
 function handleRevoke() {
@@ -188,32 +206,21 @@ function handleRevoke() {
   backupFile.value = null
 }
 
-async function handleUpload() {
+// ── Upload flow ──────────────────────────────────────────────────────────────
+
+async function startUpload() {
   error.value = ''
   try {
     if (!isAuthed.value) await authorize()
-    loading.value   = true
-    loadingText.value = '正在備份...'
-    const payload = JSON.stringify({
-      version: 2,
-      exportedAt: new Date().toISOString(),
-      ledgers:            store.ledgers,
-      transactions:       store.transactions,
-      transfers:          store.transfers,
-      recurringExpenses:  store.recurringExpenses,
-    }, null, 2)
-    await uploadBackup(payload)
-    await refreshFileInfo()
-    emit('toast', { ok: true, message: '備份成功！已寫入 Google Drive' })
-    emit('close')
+    cryptoMode.value = 'export'   // open CryptoModal for passphrase
   } catch (e) {
-    error.value = e.message || '備份失敗，請再試一次'
-  } finally {
-    loading.value = false
+    error.value = e.message || '授權失敗，請再試一次'
   }
 }
 
-async function handleDownload() {
+// ── Download flow ────────────────────────────────────────────────────────────
+
+async function startDownload() {
   error.value = ''
   try {
     if (!isAuthed.value) await authorize()
@@ -222,24 +229,75 @@ async function handleDownload() {
       error.value = 'Google Drive 上找不到備份檔案，請先備份一次'
       return
     }
-    loading.value     = true
-    loadingText.value = '正在下載備份...'
-    const text   = await downloadBackup(backupFile.value.id)
+    cryptoMode.value = 'import'   // open CryptoModal for passphrase
+  } catch (e) {
+    error.value = e.message || '授權失敗，請再試一次'
+  }
+}
+
+// ── CryptoModal callback ─────────────────────────────────────────────────────
+
+async function onCryptoConfirm({ passphrase, pepper }) {
+  const mode = cryptoMode.value
+  cryptoMode.value = null
+
+  if (mode === 'export') {
+    await doUpload(passphrase, pepper)
+  } else {
+    await doDownload(passphrase, pepper)
+  }
+}
+
+async function doUpload(passphrase, pepper) {
+  loading.value   = true
+  loadingText.value = '正在加密...'
+  error.value = ''
+  try {
+    const payload = JSON.stringify({
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      ledgers:           store.ledgers,
+      transactions:      store.transactions,
+      transfers:         store.transfers,
+      recurringExpenses: store.recurringExpenses,
+    })
+    loadingText.value = '正在上傳...'
+    const encrypted = await encryptData(payload, passphrase, pepper)
+    await uploadBackup(encrypted)
+    await refreshFileInfo()
+    emit('toast', { ok: true, message: '加密備份成功！已寫入 Google Drive' })
+    emit('close')
+  } catch (e) {
+    error.value = e.message || '備份失敗，請再試一次'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function doDownload(passphrase, pepper) {
+  loading.value   = true
+  loadingText.value = '正在下載...'
+  error.value = ''
+  try {
+    const text = await downloadBackup(backupFile.value.id)
+    loadingText.value = '正在解密...'
+    let plain
     if (isEncrypted(text)) {
-      // Pass to parent to handle decryption via existing CryptoModal
-      emit('toast', { ok: false, message: '雲端備份為加密檔案，請使用本機匯入功能解密還原' })
-      emit('close')
-      return
+      plain = await decryptData(text, passphrase, pepper)
+    } else {
+      // 雲端是舊的未加密備份，直接匯入（不需要密碼）
+      plain = text
     }
-    const result = store.importData(text)
+    const result = store.importData(plain)
     if (result.ok) {
       emit('toast', { ok: true, message: `還原成功！共 ${store.transactions.length} 筆交易` })
       emit('close')
     } else {
       error.value = result.error
     }
-  } catch (e) {
-    error.value = e.message || '下載失敗，請再試一次'
+  } catch {
+    // decryptData throws on wrong key — surface friendly message
+    error.value = '解密失敗，請確認密碼與調味料是否正確'
   } finally {
     loading.value = false
   }
