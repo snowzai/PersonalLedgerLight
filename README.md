@@ -41,9 +41,9 @@ PersonalLedgerLight is a lightweight personal finance management web application
    ```bash
    npm install vite
    ```
-4. Start the development server:
+4. Start the development:
    ```bash
-   npm run serve
+   npm run dev
    ```
 
 ## Usage Guide
