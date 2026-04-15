@@ -4,18 +4,18 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-50 px-0 md:px-4"
       @click.self="$emit('close')"
     >
-      <div class="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
+      <div class="bg-white dark:bg-slate-800 w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
         <!-- Handle (mobile) -->
         <div class="md:hidden flex justify-center pt-3 pb-1">
-          <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+          <div class="w-10 h-1 bg-slate-200 dark:bg-slate-600 rounded-full"></div>
         </div>
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 class="text-lg font-semibold text-slate-900">{{ isEditing ? '編輯固定支出' : '新增固定支出' }}</h2>
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ isEditing ? '編輯固定支出' : '新增固定支出' }}</h2>
           <button
             @click="$emit('close')"
-            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -27,7 +27,7 @@
         <div class="px-6 py-5 space-y-5 overflow-y-auto max-h-[80vh]">
           <!-- Name -->
           <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">名稱</label>
+            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">名稱</label>
             <input
               ref="nameInput"
               v-model="form.name"
@@ -41,7 +41,7 @@
 
           <!-- Amount -->
           <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">金額</label>
+            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">金額</label>
             <div class="relative">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-sm">NT$</span>
               <input
@@ -59,7 +59,7 @@
 
           <!-- Category -->
           <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">分類</label>
+            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">分類</label>
             <div class="grid grid-cols-4 gap-2">
               <button
                 v-for="cat in EXPENSE_CATEGORIES"
@@ -76,7 +76,7 @@
 
           <!-- Ledger -->
           <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">記入帳本</label>
+            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">記入帳本</label>
             <div class="grid grid-cols-2 gap-2">
               <button
                 v-for="l in store.ledgers"
@@ -99,7 +99,7 @@
           <!-- Day of month + Note -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">每月幾號扣款</label>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">每月幾號扣款</label>
               <input
                 v-model.number="form.dayOfMonth"
                 type="number"
@@ -110,7 +110,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">備註</label>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">備註</label>
               <input v-model="form.note" type="text" placeholder="選填" maxlength="30" class="input-field text-sm" />
             </div>
           </div>
@@ -119,7 +119,7 @@
         <!-- Footer -->
         <div class="px-6 pb-6 pt-2 flex gap-3">
           <button v-if="isEditing" @click="handleDelete" class="px-4 py-3 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 text-sm font-medium transition-colors cursor-pointer">刪除</button>
-          <button @click="$emit('close')" class="flex-1 btn-ghost text-sm border border-slate-200">取消</button>
+          <button @click="$emit('close')" class="flex-1 btn-ghost text-sm border border-slate-200 dark:border-slate-600">取消</button>
           <button @click="handleSave" class="flex-1 btn-primary text-sm">
             {{ isEditing ? '儲存變更' : '新增' }}
           </button>

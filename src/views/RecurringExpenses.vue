@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900">固定支出</h1>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">固定支出</h1>
         <p class="text-sm text-slate-400 mt-0.5">每月定期扣款項目</p>
       </div>
       <button
@@ -27,7 +27,7 @@
       </div>
       <div class="text-right">
         <p class="text-xs font-medium text-slate-400 mb-0.5">啟用項目</p>
-        <p class="text-xl font-bold text-slate-700">{{ activeCount }} <span class="text-sm font-normal text-slate-400">/ {{ store.recurringExpenses.length }} 筆</span></p>
+        <p class="text-xl font-bold text-slate-700 dark:text-slate-200">{{ activeCount }} <span class="text-sm font-normal text-slate-400">/ {{ store.recurringExpenses.length }} 筆</span></p>
       </div>
     </div>
 
@@ -69,8 +69,8 @@
         <!-- Info -->
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
-            <p class="text-sm font-semibold text-slate-800 truncate">{{ rec.name }}</p>
-            <span v-if="!rec.isActive" class="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-400 rounded-md font-medium">暫停</span>
+            <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{{ rec.name }}</p>
+            <span v-if="!rec.isActive" class="text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-600 text-slate-400 rounded-md font-medium">暫停</span>
           </div>
           <p class="text-xs text-slate-400 mt-0.5">
             {{ rec.category }} · 每月 {{ rec.dayOfMonth }} 號

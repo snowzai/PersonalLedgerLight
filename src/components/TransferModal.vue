@@ -4,18 +4,18 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-50 px-0 md:px-4"
       @click.self="$emit('close')"
     >
-      <div class="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
+      <div class="bg-white dark:bg-slate-800 w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
         <!-- Handle (mobile) -->
         <div class="md:hidden flex justify-center pt-3 pb-1">
-          <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+          <div class="w-10 h-1 bg-slate-200 dark:bg-slate-600 rounded-full"></div>
         </div>
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 class="text-lg font-semibold text-slate-900">{{ isEditing ? '編輯轉帳' : '帳本轉帳' }}</h2>
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ isEditing ? '編輯轉帳' : '帳本轉帳' }}</h2>
           <button
             @click="$emit('close')"
-            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
+            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -28,7 +28,7 @@
           <div class="flex items-center gap-3">
             <!-- From ledger -->
             <div class="flex-1">
-              <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">從帳本</label>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">從帳本</label>
               <button
                 v-for="l in store.ledgersWithBalance"
                 v-show="false"
@@ -37,7 +37,7 @@
               <div class="relative">
                 <select
                   v-model="form.fromLedgerId"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                  class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
                   @change="validateDifferentLedgers"
                 >
                   <option v-for="l in store.ledgersWithBalance" :key="l.id" :value="l.id">
@@ -64,11 +64,11 @@
 
             <!-- To ledger -->
             <div class="flex-1">
-              <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">至帳本</label>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">至帳本</label>
               <div class="relative">
                 <select
                   v-model="form.toLedgerId"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                  class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
                   @change="validateDifferentLedgers"
                 >
                   <option v-for="l in store.ledgersWithBalance" :key="l.id" :value="l.id">
@@ -86,7 +86,7 @@
 
           <!-- Amount -->
           <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">金額</label>
+            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">金額</label>
             <div class="relative">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-sm">NT$</span>
               <input
@@ -105,7 +105,7 @@
           <!-- Description + Date -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">描述</label>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">描述</label>
               <input
                 v-model="form.description"
                 type="text"
@@ -115,7 +115,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">日期</label>
+              <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">日期</label>
               <input
                 v-model="form.date"
                 type="date"
@@ -143,7 +143,7 @@
             @click="handleDelete"
             class="px-4 py-3 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 text-sm font-medium transition-colors cursor-pointer"
           >刪除</button>
-          <button @click="$emit('close')" class="flex-1 btn-ghost text-sm border border-slate-200">取消</button>
+          <button @click="$emit('close')" class="flex-1 btn-ghost text-sm border border-slate-200 dark:border-slate-600">取消</button>
           <button @click="handleSave" class="flex-1 btn-primary text-sm" :disabled="sameError">
             {{ isEditing ? '儲存變更' : '確認轉帳' }}
           </button>

@@ -96,10 +96,16 @@ export const useLedgerStore = defineStore('ledger', () => {
   )
 
   const totalBalance = computed(() =>
-    ledgers.value.reduce((s, l) => s + getLedgerBalance(l.id), 0)
+    ledgers.value
+      .filter(l => !l.excludeFromTotal)
+      .reduce((s, l) => s + getLedgerBalance(l.id), 0)
   )
 
   // ── Filtered transactions (respects activeLedgerId) ────────────────────────
+
+  const excludedLedgerIds = computed(() =>
+    new Set(ledgers.value.filter(l => l.excludeFromTotal).map(l => l.id))
+  )
 
   const activeTransactions = computed(() =>
     activeLedgerId.value === 'all'
@@ -113,10 +119,19 @@ export const useLedgerStore = defineStore('ledger', () => {
       : transfers.value.filter(t => t.fromLedgerId === activeLedgerId.value || t.toLedgerId === activeLedgerId.value)
   )
 
+  // Same as activeTransactions but excludes "不計入" ledgers when viewing all
+  const activeTransactionsForStats = computed(() => {
+    if (activeLedgerId.value !== 'all') return activeTransactions.value
+    const excluded = excludedLedgerIds.value
+    return excluded.size
+      ? transactions.value.filter(t => !excluded.has(t.ledgerId))
+      : transactions.value
+  })
+
   // ── Month-level aggregates (for Dashboard) ─────────────────────────────────
 
   const monthTransactions = computed(() =>
-    activeTransactions.value.filter(t => t.date.startsWith(currentMonth.value))
+    activeTransactionsForStats.value.filter(t => t.date.startsWith(currentMonth.value))
   )
 
   const monthIncome = computed(() =>
@@ -132,7 +147,7 @@ export const useLedgerStore = defineStore('ledger', () => {
   const last6MonthsData = computed(() => {
     const months = Array.from({ length: 6 }, (_, i) => dayjs().subtract(5 - i, 'month').format('YYYY-MM'))
     return months.map(month => {
-      const txs = activeTransactions.value.filter(t => t.date.startsWith(month))
+      const txs = activeTransactionsForStats.value.filter(t => t.date.startsWith(month))
       return {
         month: dayjs(month + '-01').format('M月'),
         income:  txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
@@ -186,6 +201,13 @@ export const useLedgerStore = defineStore('ledger', () => {
     transactions.value = transactions.value.filter(t => t.ledgerId !== id)
     transfers.value    = transfers.value.filter(t => t.fromLedgerId !== id && t.toLedgerId !== id)
     if (activeLedgerId.value === id) activeLedgerId.value = 'all'
+    save()
+  }
+  function moveLedger(fromIndex, toIndex) {
+    const arr = [...ledgers.value]
+    const [item] = arr.splice(fromIndex, 1)
+    arr.splice(toIndex, 0, item)
+    ledgers.value = arr
     save()
   }
 
@@ -321,7 +343,7 @@ export const useLedgerStore = defineStore('ledger', () => {
     last6MonthsData, expenseByCategory, recentItems,
     load, save,
     prevMonth, nextMonth, isCurrentMonth,
-    addLedger, updateLedger, deleteLedger, getLedger,
+    addLedger, updateLedger, deleteLedger, moveLedger, getLedger,
     addTransaction, updateTransaction, deleteTransaction,
     addTransfer, updateTransfer, deleteTransfer,
     addRecurring, updateRecurring, deleteRecurring, applyRecurring, appliedRecurringIds,

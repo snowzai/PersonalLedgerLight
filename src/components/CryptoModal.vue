@@ -4,14 +4,14 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-50 px-0 md:px-4"
       @click.self="$emit('cancel')"
     >
-      <div class="bg-white w-full md:max-w-sm rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
+      <div class="bg-white dark:bg-slate-800 w-full md:max-w-sm rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
         <!-- Handle (mobile) -->
         <div class="md:hidden flex justify-center pt-3 pb-1">
-          <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+          <div class="w-10 h-1 bg-slate-200 dark:bg-slate-600 rounded-full"></div>
         </div>
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-xl flex items-center justify-center" :class="mode === 'export' ? 'bg-blue-50' : 'bg-emerald-50'">
               <svg class="w-4 h-4" :class="mode === 'export' ? 'text-blue-500' : 'text-emerald-500'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -100,7 +100,7 @@
 
         <!-- Footer -->
         <div class="px-6 pb-6 pt-2 flex gap-3">
-          <button @click="$emit('cancel')" class="flex-1 btn-ghost text-sm border border-slate-200">取消</button>
+          <button @click="$emit('cancel')" class="flex-1 btn-ghost text-sm border border-slate-200 dark:border-slate-600">取消</button>
           <button @click="handleConfirm" :disabled="loading" class="flex-1 btn-primary text-sm flex items-center justify-center gap-2">
             <svg v-if="loading" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>

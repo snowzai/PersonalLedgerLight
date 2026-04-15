@@ -4,14 +4,14 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-50 px-0 md:px-4"
       @click.self="$emit('close')"
     >
-      <div class="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
+      <div class="bg-white dark:bg-slate-800 w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
         <!-- Handle (mobile) -->
         <div class="md:hidden flex justify-center pt-3 pb-1">
-          <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+          <div class="w-10 h-1 bg-slate-200 dark:bg-slate-600 rounded-full"></div>
         </div>
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 flex items-center justify-center">
               <svg viewBox="0 0 87.3 78" class="w-7 h-7">
@@ -24,13 +24,13 @@
               </svg>
             </div>
             <div>
-              <h2 class="text-base font-semibold text-slate-900">Google Drive 備份</h2>
+              <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">Google Drive 備份</h2>
               <p class="text-xs text-slate-400">手動讀取 / 寫入（加密保護）</p>
             </div>
           </div>
           <button
             @click="$emit('close')"
-            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -45,7 +45,7 @@
               <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
             </svg>
           </div>
-          <p class="text-sm font-medium text-slate-700 mb-1">尚未設定 Google Client ID</p>
+          <p class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">尚未設定 Google Client ID</p>
           <p class="text-xs text-slate-400 leading-relaxed">
             請在專案根目錄建立 <code class="bg-slate-100 px-1 rounded text-slate-600">.env.local</code>，<br>
             加入 <code class="bg-slate-100 px-1 rounded text-slate-600">VITE_GOOGLE_CLIENT_ID=你的Client ID</code>
@@ -97,7 +97,7 @@
                 </svg>
               </div>
               <div class="flex-1">
-                <p class="text-sm font-medium text-slate-700">備份到 Google Drive</p>
+                <p class="text-sm font-medium text-slate-700 dark:text-slate-300">備份到 Google Drive</p>
                 <p class="text-xs text-slate-400">加密後寫入雲端（{{ backupFile ? '覆蓋更新' : '新建檔案' }}）</p>
               </div>
               <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
@@ -121,7 +121,7 @@
                 </svg>
               </div>
               <div class="flex-1">
-                <p class="text-sm font-medium text-slate-700">從 Google Drive 還原</p>
+                <p class="text-sm font-medium text-slate-700 dark:text-slate-300">從 Google Drive 還原</p>
                 <p class="text-xs text-slate-400">下載並解密，還原至本機</p>
               </div>
               <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">

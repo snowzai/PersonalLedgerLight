@@ -1,30 +1,43 @@
 <template>
   <div class="min-h-screen flex">
     <!-- Sidebar (desktop) -->
-    <aside class="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 fixed h-full z-30">
+    <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-100 dark:border-slate-700 fixed h-full z-30">
       <!-- Brand + Net Worth -->
-      <div class="px-5 py-5 border-b border-slate-100">
+      <div class="px-5 py-5 border-b border-slate-100 dark:border-slate-700">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
             <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><line x1="6" y1="15" x2="9" y2="15"/><line x1="12" y1="15" x2="16" y2="15"/>
             </svg>
           </div>
-          <div>
-            <p class="font-semibold text-slate-900 leading-tight text-sm">我的帳本</p>
+          <div class="flex-1">
+            <p class="font-semibold text-slate-900 dark:text-slate-100 leading-tight text-sm">我的帳本</p>
             <p class="text-xs text-slate-400">私人財務記錄</p>
           </div>
+          <button
+            @click="toggleDark"
+            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
+            :title="isDark ? '切換淺色模式' : '切換深色模式'"
+            aria-label="切換深淺色模式"
+          >
+            <svg v-if="isDark" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg v-else class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+          </button>
         </div>
-        <div class="px-3 py-2.5 bg-slate-50 rounded-xl">
+        <div class="px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
           <p class="text-xs text-slate-400 mb-0.5">總資產淨值</p>
-          <p class="text-lg font-bold tabular-nums" :class="store.totalBalance >= 0 ? 'text-slate-900' : 'text-red-500'">
+          <p class="text-lg font-bold tabular-nums" :class="store.totalBalance >= 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-500'">
             {{ formatCurrency(store.totalBalance) }}
           </p>
         </div>
       </div>
 
       <!-- Ledger list -->
-      <div class="px-3 py-3 border-b border-slate-100">
+      <div class="px-3 py-3 border-b border-slate-100 dark:border-slate-700">
         <div class="flex items-center justify-between px-2 mb-2">
           <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">帳本</span>
           <button
@@ -42,7 +55,7 @@
         <button
           @click="store.activeLedgerId = 'all'"
           class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 cursor-pointer mb-0.5"
-          :class="store.activeLedgerId === 'all' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+          :class="store.activeLedgerId === 'all' ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'"
         >
           <div class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
             <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -56,34 +69,50 @@
           </span>
         </button>
 
-        <!-- Individual ledgers -->
-        <button
-          v-for="l in store.ledgersWithBalance"
+        <!-- Individual ledgers (draggable) -->
+        <div
+          v-for="(l, idx) in store.ledgersWithBalance"
           :key="l.id"
-          @click="store.activeLedgerId = l.id"
-          class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 cursor-pointer mb-0.5 group"
-          :class="store.activeLedgerId === l.id ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+          draggable="true"
+          @dragstart="onDragStart(idx, $event)"
+          @dragover.prevent="onDragOver(idx)"
+          @dragend="onDragEnd"
+          class="transition-all duration-150 mb-0.5"
+          :class="{ 'opacity-40': dragIndex === idx, 'border-t-2 border-blue-400': dragOverIndex === idx && dragOverIndex !== dragIndex }"
         >
-          <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" :style="{ backgroundColor: l.color + '20' }">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" :style="{ color: l.color }">
-              <path :d="getLedgerIconSvg(l.iconKey)" />
-            </svg>
-          </div>
-          <span class="text-sm font-medium flex-1 truncate">{{ l.name }}</span>
-          <span class="text-xs tabular-nums" :class="l.balance >= 0 ? 'text-slate-400' : 'text-red-400'">
-            {{ formatCurrencyShort(l.balance) }}
-          </span>
           <button
-            @click.stop="openLedgerModal(l)"
-            class="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded text-slate-300 hover:text-slate-600 transition-all cursor-pointer ml-0.5"
-            title="編輯"
+            @click="store.activeLedgerId = l.id"
+            class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 cursor-pointer group"
+            :class="store.activeLedgerId === l.id ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'"
           >
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            <!-- Drag handle -->
+            <svg class="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 flex-shrink-0 cursor-grab transition-opacity" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="9" cy="6" r="2"/><circle cx="15" cy="6" r="2"/>
+              <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
+              <circle cx="9" cy="18" r="2"/><circle cx="15" cy="18" r="2"/>
             </svg>
+            <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" :style="{ backgroundColor: l.color + '20' }">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" :style="{ color: l.color }">
+                <path :d="getLedgerIconSvg(l.iconKey)" />
+              </svg>
+            </div>
+            <span class="text-sm font-medium flex-1 truncate">{{ l.name }}</span>
+            <span v-if="l.excludeFromTotal" class="text-[10px] text-slate-300 flex-shrink-0" title="不計入總資產">不計入</span>
+            <span class="text-xs tabular-nums" :class="l.balance >= 0 ? 'text-slate-400' : 'text-red-400'">
+              {{ formatCurrencyShort(l.balance) }}
+            </span>
+            <button
+              @click.stop="openLedgerModal(l)"
+              class="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded text-slate-300 hover:text-slate-600 transition-all cursor-pointer ml-0.5"
+              title="編輯"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
           </button>
-        </button>
+        </div>
       </div>
 
       <!-- Nav -->
@@ -93,7 +122,7 @@
           :key="item.key"
           @click="currentView = item.key"
           class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 cursor-pointer"
-          :class="currentView === item.key ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'"
+          :class="currentView === item.key ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200'"
         >
           <component :is="item.icon" class="w-4 h-4 flex-shrink-0" />
           <span class="text-sm">{{ item.label }}</span>
@@ -101,10 +130,10 @@
       </nav>
 
       <!-- Export / Import -->
-      <div class="px-3 py-3 border-t border-slate-100 space-y-1">
+      <div class="px-3 py-3 border-t border-slate-100 dark:border-slate-700 space-y-1">
         <button
           @click="startExport"
-          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-150 cursor-pointer"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-150 cursor-pointer"
         >
           <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -115,7 +144,7 @@
         </button>
         <button
           @click="triggerImport"
-          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-150 cursor-pointer"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-150 cursor-pointer"
         >
           <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -126,7 +155,7 @@
         </button>
         <button
           @click="showDriveModal = true"
-          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-150 cursor-pointer"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-150 cursor-pointer"
         >
           <svg viewBox="0 0 87.3 78" class="w-4 h-4 flex-shrink-0">
             <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
@@ -148,7 +177,7 @@
     </main>
 
     <!-- Bottom nav (mobile) -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex z-30">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 flex z-30">
       <button
         v-for="item in navItems"
         :key="item.key"
@@ -176,22 +205,39 @@
       <Transition name="sheet">
         <div v-if="showSettingsSheet" class="md:hidden fixed inset-0 z-40 flex flex-col justify-end">
           <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showSettingsSheet = false" />
-          <div class="relative bg-white rounded-t-3xl shadow-2xl pb-safe">
+          <div class="relative bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl pb-safe">
             <div class="flex justify-center pt-3 pb-1">
-              <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+              <div class="w-10 h-1 bg-slate-200 dark:bg-slate-600 rounded-full"></div>
             </div>
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 class="text-base font-semibold text-slate-900">設定</h2>
-              <button @click="showSettingsSheet = false" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 cursor-pointer">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+              <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">設定</h2>
+              <button @click="showSettingsSheet = false" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
             <div class="px-4 py-3 space-y-1 pb-8">
               <button
-                @click="showSettingsSheet = false; startExport()"
-                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                @click="toggleDark"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
-                <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+                  <svg v-if="isDark" class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">{{ isDark ? '切換淺色模式' : '切換深色模式' }}</p>
+                  <p class="text-xs text-slate-400">{{ isDark ? '目前為深色模式' : '目前為淺色模式' }}</p>
+                </div>
+              </button>
+              <button
+                @click="showSettingsSheet = false; startExport()"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                   <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                   </svg>
@@ -203,9 +249,9 @@
               </button>
               <button
                 @click="showSettingsSheet = false; triggerImport()"
-                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
-                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
                   <svg class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
@@ -217,9 +263,9 @@
               </button>
               <button
                 @click="showSettingsSheet = false; showDriveModal = true"
-                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
-                <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
+                <div class="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
                   <svg viewBox="0 0 87.3 78" class="w-5 h-5">
                     <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
                     <path d="M43.65 25L29.9 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5A9.06 9.06 0 000 53h27.5z" fill="#00ac47"/>
@@ -334,11 +380,13 @@ import CryptoModal           from './components/CryptoModal.vue'
 import RecurringApplyModal   from './components/RecurringApplyModal.vue'
 import GoogleDriveModal      from './components/GoogleDriveModal.vue'
 import { encryptData, decryptData, isEncrypted } from './utils/crypto.js'
+import { useDarkMode } from './composables/useDarkMode.js'
 import Dashboard           from './views/Dashboard.vue'
 import Transactions        from './views/Transactions.vue'
 import RecurringExpenses   from './views/RecurringExpenses.vue'
 
 const store = useLedgerStore()
+const { isDark, init: initDarkMode, toggle: toggleDark } = useDarkMode()
 const currentView = ref('dashboard')
 const fabOpen = ref(false)
 const fileInput = ref(null)
@@ -418,6 +466,25 @@ async function onCryptoConfirm({ passphrase, pepper }) {
       cryptoModalRef.value?.setError('解密失敗，請確認密碼與調味料是否正確')
     }
   }
+}
+
+// Drag-to-reorder ledgers
+const dragIndex = ref(null)
+const dragOverIndex = ref(null)
+
+function onDragStart(idx, e) {
+  dragIndex.value = idx
+  e.dataTransfer.effectAllowed = 'move'
+}
+function onDragOver(idx) {
+  dragOverIndex.value = idx
+}
+function onDragEnd() {
+  if (dragIndex.value !== null && dragOverIndex.value !== null && dragIndex.value !== dragOverIndex.value) {
+    store.moveLedger(dragIndex.value, dragOverIndex.value)
+  }
+  dragIndex.value = null
+  dragOverIndex.value = null
 }
 
 // Settings sheet (mobile)
@@ -509,6 +576,7 @@ function openLedgerModal(ledger) {
 }
 
 onMounted(() => {
+  initDarkMode()
   store.load()
 })
 </script>

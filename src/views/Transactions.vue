@@ -2,7 +2,7 @@
   <div class="p-4 md:p-8 max-w-3xl mx-auto">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-slate-900">交易記錄</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">交易記錄</h1>
       <p class="text-sm text-slate-400 mt-0.5">
         {{ store.activeLedgerId === 'all' ? '所有帳本' : (activeLedger?.name || '') }}
       </p>
@@ -18,22 +18,22 @@
       </div>
       <div class="flex gap-2 flex-wrap">
         <!-- Type filter -->
-        <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+        <div class="flex bg-slate-100 dark:bg-slate-700 rounded-xl p-1 gap-1">
           <button
             v-for="t in typeOptions"
             :key="t.value"
             @click="filterType = t.value"
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer"
-            :class="filterType === t.value ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+            :class="filterType === t.value ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-slate-100 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
           >{{ t.label }}</button>
         </div>
         <!-- Month filter -->
-        <select v-model="filterMonth" class="bg-slate-100 border-0 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+        <select v-model="filterMonth" class="bg-slate-100 dark:bg-slate-700 border-0 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
           <option value="">全部月份</option>
           <option v-for="m in availableMonths" :key="m.value" :value="m.value">{{ m.label }}</option>
         </select>
         <!-- Ledger filter (only when "all") -->
-        <select v-if="store.activeLedgerId === 'all'" v-model="filterLedger" class="bg-slate-100 border-0 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+        <select v-if="store.activeLedgerId === 'all'" v-model="filterLedger" class="bg-slate-100 dark:bg-slate-700 border-0 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
           <option value="">所有帳本</option>
           <option v-for="l in store.ledgers" :key="l.id" :value="l.id">{{ l.name }}</option>
         </select>
@@ -70,13 +70,13 @@
           </span>
         </div>
 
-        <div class="card overflow-hidden divide-y divide-slate-50">
+        <div class="card overflow-hidden divide-y divide-slate-50 dark:divide-slate-700">
           <template v-for="item in group.items" :key="item.id">
 
             <!-- Transfer row -->
             <div
               v-if="item._kind === 'transfer'"
-              class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors cursor-pointer group"
+              class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer group"
               @click="$emit('open-edit-transfer', item)"
             >
               <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
@@ -86,9 +86,9 @@
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-sm font-medium text-slate-800">{{ getLedgerName(item.fromLedgerId) }}</span>
+                  <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ getLedgerName(item.fromLedgerId) }}</span>
                   <svg class="w-3 h-3 text-slate-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                  <span class="text-sm font-medium text-slate-800">{{ getLedgerName(item.toLedgerId) }}</span>
+                  <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ getLedgerName(item.toLedgerId) }}</span>
                   <span class="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded-full font-medium">轉帳</span>
                 </div>
                 <p class="text-xs text-slate-400 mt-0.5">{{ item.description || '帳本轉帳' }}</p>
@@ -105,13 +105,13 @@
             <!-- Transaction row -->
             <div
               v-else
-              class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors cursor-pointer group"
+              class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer group"
               @click="$emit('open-edit', item)"
             >
               <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
                    :class="item.type === 'income' ? 'bg-emerald-50' : 'bg-red-50'">{{ categoryIcon(item.category) }}</div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-slate-800 truncate">{{ item.description || item.category }}</p>
+                <p class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{{ item.description || item.category }}</p>
                 <p class="text-xs text-slate-400 mt-0.5">
                   {{ item.category }}
                   <span v-if="item.note"> · {{ item.note }}</span>
@@ -139,9 +139,9 @@
     <!-- Delete confirm -->
     <Teleport to="body">
       <div v-if="deletingItem" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4" @click.self="deletingItem = null">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-          <h3 class="text-base font-semibold text-slate-900 mb-1">確認刪除</h3>
-          <p class="text-sm text-slate-500 mb-5">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-xl">
+          <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">確認刪除</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
             此動作無法復原，確認要刪除這筆記錄嗎？
           </p>
           <div class="flex gap-3">

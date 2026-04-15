@@ -4,21 +4,21 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-50 px-0 md:px-4"
       @click.self="$emit('close')"
     >
-      <div class="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
+      <div class="bg-white dark:bg-slate-800 w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden">
         <!-- Handle (mobile) -->
         <div class="md:hidden flex justify-center pt-3 pb-1">
-          <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+          <div class="w-10 h-1 bg-slate-200 dark:bg-slate-600 rounded-full"></div>
         </div>
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
           <div>
-            <h2 class="text-lg font-semibold text-slate-900">套用固定支出</h2>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">套用固定支出</h2>
             <p class="text-xs text-slate-400 mt-0.5">{{ displayMonth }}</p>
           </div>
           <button
             @click="$emit('close')"
-            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+            class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -73,7 +73,7 @@
 
               <!-- Info -->
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-slate-800 truncate">{{ item.name }}</p>
+                <p class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{{ item.name }}</p>
                 <p class="text-xs text-slate-400">
                   {{ item.category }} · {{ item.dayOfMonth }} 號
                   <span v-if="item.alreadyApplied" class="text-emerald-500 font-medium"> · 已套用</span>
@@ -97,7 +97,7 @@
 
         <!-- Footer -->
         <div class="px-6 pb-6 pt-2 flex gap-3">
-          <button @click="$emit('close')" class="flex-1 btn-ghost text-sm border border-slate-200">取消</button>
+          <button @click="$emit('close')" class="flex-1 btn-ghost text-sm border border-slate-200 dark:border-slate-600">取消</button>
           <button
             @click="handleApply"
             :disabled="selectedIds.size === 0"
