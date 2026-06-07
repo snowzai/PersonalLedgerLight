@@ -3,6 +3,14 @@
     <!-- Header + Month selector -->
     <div class="flex items-center justify-between mb-6">
       <div>
+        <button
+          v-if="store.activeLedgerId !== 'all'"
+          @click="store.activeLedgerId = 'all'"
+          class="md:hidden flex items-center gap-1 text-xs text-blue-600 font-medium mb-1.5 cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          返回總覽
+        </button>
         <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
           {{ store.activeLedgerId === 'all' ? '總覽' : (activeLedger?.name || '總覽') }}
         </h1>
